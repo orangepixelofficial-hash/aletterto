@@ -1,0 +1,6 @@
+{
+  "name": "A Letter for You",
+  "description": "An intimate interactive letter with realistic envelope unfolding animations, floating ambient dust, and a live counter with a stop control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

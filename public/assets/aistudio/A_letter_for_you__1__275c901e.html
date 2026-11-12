@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A letter for you</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1f1b19; --wine:#6b2824; --cream:#f3e9de; --muted:#6f655a;
+  --tex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='5' seed='3'/%3E%3CfeDiffuseLighting lighting-color='%23fff' surfaceScale='2.2' diffuseConstant='1.25'%3E%3CfeDistantLight azimuth='45' elevation='62'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)'/%3E%3C/svg%3E");
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .14 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-sizing:border-box;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow:hidden;background:linear-gradient(#ece8e2,#d8d2ca);font-family:'Cormorant Garamond',Georgia,serif;color:var(--ink)}
+
+/* ---------- envelope ---------- */
+.stage{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 1s cubic-bezier(.7,0,.3,1),opacity .9s ease}
+.stage:focus-visible{outline:2px solid var(--muted);outline-offset:-8px}
+.stage.gone{transform:translateY(40vh) scale(.9);opacity:0;pointer-events:none}
+.stage.hidden{visibility:hidden}
+.persp{perspective:1400px;width:min(92vw,520px)}
+.env{position:relative;width:100%;aspect-ratio:3/2;filter:drop-shadow(0 24px 30px rgba(60,48,38,.3));animation:settle 1.1s ease both}
+@keyframes settle{from{opacity:0;transform:translateY(14px)}}
+.env>*{position:absolute}
+.back{inset:0;background:#e4dcd0;border-radius:6px}
+.peek{left:6%;right:6%;top:8%;bottom:6%;background:#f6efdf;border-radius:3px;z-index:1;transition:transform .9s .75s ease}
+.open .peek{transform:translateY(-42%)}
+.pocket{inset:0;z-index:2;border-radius:6px;background:linear-gradient(170deg,#faf6ef,#eee6da);clip-path:polygon(0 0,50% 57%,100% 0,100% 100%,0 100%)}
+.lines{inset:0;z-index:3;pointer-events:none}
+.lines svg{width:100%;height:100%;display:block}
+.flapwrap{left:0;right:0;top:0;height:57%;z-index:4;transform-origin:top center;transition:transform .95s cubic-bezier(.5,0,.2,1),z-index 0s .42s;filter:drop-shadow(0 6px 8px rgba(60,48,38,.25))}
+.open .flapwrap{transform:rotateX(180deg);z-index:0}
+.flap{position:absolute;inset:0;border-radius:6px 6px 0 0;clip-path:polygon(0 0,100% 0,50% 100%);background:linear-gradient(#f4ede2,#ebe2d5)}
+
+/* ---------- letter screen: wine background, textured paper ---------- */
+.paper{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:calc(22px + env(safe-area-inset-top,0px)) 14px calc(12px + env(safe-area-inset-bottom,0px));
+  background:var(--grain),radial-gradient(ellipse at 50% 30%,#7b2f2b 0%,var(--wine) 55%,#561f1c 100%);
+  visibility:hidden;pointer-events:none;z-index:3}
+.show .paper{visibility:visible;pointer-events:auto}
+.sheet{position:relative;flex:1;min-height:0;width:min(100%,540px);max-height:880px;display:flex;flex-direction:column;
+  padding:24px 22px 22px;
+  background:var(--tex),#f9f6f1;background-blend-mode:multiply;
+  box-shadow:0 18px 26px rgba(20,5,5,.45),0 2px 3px rgba(20,5,5,.3);
+  transform:translateY(60px) scale(.9);opacity:0}
+.show .sheet{animation:pop 1.2s cubic-bezier(.2,.9,.3,1.05) forwards}
+@keyframes pop{to{transform:none;opacity:1}}
+
+.clip{position:absolute;top:-16px;right:18px;width:22px;height:62px;z-index:2;filter:drop-shadow(1px 3px 2px rgba(20,5,5,.35));pointer-events:none}
+.stamp{float:left;width:44px;height:54px;margin:0 12px 6px 0;shape-outside:margin-box}
+.stamp svg{width:100%;height:100%;display:block}
+
+.text{flex:1;min-height:0;overflow:hidden;font-size:18px;line-height:1.25;font-weight:600}
+.text p{margin:0 0 .5em;overflow-wrap:anywhere;opacity:0}
+.text p:last-child{margin-bottom:0}
+.show .text p{animation:ink .9s ease forwards;animation-delay:calc(1.1s + var(--i)*.35s)}
+@keyframes ink{from{opacity:0;transform:translateY(8px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+.stamp{opacity:0}
+.show .stamp{animation:thud 1s 1.2s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes thud{0%{opacity:0;transform:scale(1.9) rotate(-14deg)}55%{opacity:1;transform:scale(.92) rotate(-3deg)}75%{transform:scale(1.04) rotate(-5deg)}100%{opacity:1;transform:scale(1) rotate(-4deg)}}
+
+/* timer under the letter */
+.timer{flex:none;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--cream);opacity:0}
+.show .timer{animation:ink .9s 3.4s ease forwards}
+.tlabel{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;line-height:1.3}
+.tgrid{display:flex;justify-content:center;gap:8px;margin-top:6px}
+.tgrid div{min-width:58px;border:1px solid rgba(243,233,222,.5);padding:4px 6px 3px}
+.tgrid b{display:block;font-size:20px;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums}
+.tgrid span{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.tcontrols{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:8px}
+.btn-stop{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;min-height:34px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);background:rgba(243,233,222,.08);border:1px solid rgba(243,233,222,.5);border-radius:4px;cursor:pointer;transition:all .2s ease}
+.btn-stop:hover{background:rgba(243,233,222,.18);border-color:rgba(243,233,222,.85);transform:translateY(-1px)}
+.btn-stop:active{transform:translateY(0)}
+.btn-stop.is-stopped{background:rgba(243,233,222,.2);border-color:rgba(243,233,222,.9)}
+.tstatus{font-size:10px;letter-spacing:.1em;color:rgba(243,233,222,.8);margin-top:4px}
+
+/* extra life */
+.env{animation:settle 1.1s ease both,breathe 4.5s 1.2s ease-in-out infinite}
+@keyframes breathe{50%{transform:translateY(-6px) rotate(-.4deg)}}
+.flap{animation:nudge 4.5s 2.5s ease-in-out infinite}
+@keyframes nudge{0%,86%,100%{transform:translateY(0)}90%{transform:translateY(-6px)}94%{transform:translateY(0)}97%{transform:translateY(-3px)}}
+.sheen{inset:0;z-index:6;pointer-events:none;overflow:hidden;border-radius:6px}
+.sheen::after{content:"";position:absolute;top:-20%;bottom:-20%;width:28%;left:-40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:sweep 5.5s 2s ease-in-out infinite}
+@keyframes sweep{0%{left:-40%}35%,100%{left:130%}}
+.paper{perspective:1000px;touch-action:none}
+.paper::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(255,170,140,.16),transparent 60%);animation:glow 7s ease-in-out infinite alternate;pointer-events:none}
+@keyframes glow{from{opacity:.35;transform:scale(1)}to{opacity:1;transform:scale(1.15)}}
+.dust{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.dust i{position:absolute;bottom:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,235,215,.95),rgba(255,235,215,0) 70%);opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}15%{opacity:.7}85%{opacity:.45}100%{transform:translate(var(--dx),-105vh);opacity:0}}
+.sheet{z-index:1;transition:rotate .2s ease-out}
+.timer{position:relative;z-index:1}
+.sheet::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.6) 50%,transparent 65%);background-size:250% 100%;background-position:150% 0;opacity:0}
+.show .sheet::after{animation:glint 1.6s 1.4s ease-out forwards}
+@keyframes glint{0%{opacity:1;background-position:150% 0}100%{opacity:0;background-position:-50% 0}}
+.clip{transform-origin:50% 8%;opacity:0}
+.show .clip{animation:clipin 1.4s 1s ease forwards}
+@keyframes clipin{0%{opacity:0;transform:translateY(-40px) rotate(-30deg)}40%{opacity:1;transform:translateY(0) rotate(14deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(4deg)}100%{opacity:1;transform:rotate(0)}}
+.tgrid b.flip{animation:flip .45s ease}
+@keyframes flip{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .dust,.sheen,.paper::before,.sheet::after{display:none}
+  .flap{animation:none}
+  .show .clip{animation:none;opacity:1}
+  .tgrid b.flip{animation:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .stage,.peek,.flapwrap{transition-duration:.01s;transition-delay:0s}
+  .env{animation:none}
+  .show .sheet,.show .timer,.show .text p,.show .stamp{animation-duration:.01s;animation-delay:0s}
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage" role="button" tabindex="0" aria-label="Open the letter">
+  <div class="persp">
+    <div class="env" id="env">
+      <div class="back"></div>
+      <div class="peek"></div>
+      <div class="pocket"></div>
+      <div class="lines" aria-hidden="true">
+        <svg viewBox="0 0 300 200" preserveAspectRatio="none"><path d="M0 200 L150 114 L300 200" fill="none" stroke="rgba(110,95,80,.22)" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M0 0 L150 114 L300 0" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+      </div>
+      <div class="flapwrap"><div class="flap"></div></div>
+      <div class="sheen" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<div class="paper">
+  <div class="dust" id="dust" aria-hidden="true"></div>
+  <article class="sheet" id="sheet">
+    <svg class="clip" viewBox="0 0 22 62" aria-hidden="true">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9dce0"/><stop offset=".5" stop-color="#9aa0a8"/><stop offset="1" stop-color="#cfd3d8"/></linearGradient></defs>
+      <path d="M6 58V12a5 5 0 0 1 10 0V50a3.4 3.4 0 0 1-6.8 0V18" fill="none" stroke="url(#cg)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+
+    <div class="text" id="text">
+      <div class="stamp" id="stamp" aria-hidden="true"></div>
+      <p style="--i:0">Njn orikalum anne hurt akkanm vicharichitlyaa njn ento ariyathe frustationil iy mundathe irnapoo ihsante account keri nokkiyatha like sorry njn chythth nalla thettan njn aa msg okke aynte sensil ee edthitt ollu pinne ink ntho iy njn karnam karnj parnjinte sheshm oru samadhanamvum ith vere ndyitlyaaa like iplm illaaa😩.</p>
+      <p style="--i:1">pinne siba ann immane vilichath ink arilernuu ol inte per paryumn olod njn kore vattam msg parnjatha paryaryh paryath nn ink areela njn orikalum anood illa trust kalnjitlyaaa like sorry parnjit karym illa ariyaa but shemikanam plssss😭 ini orikalum inte sidn agne onnum ndvula</p>
+      <p style="--i:2">njn tution vere drop akkiyath ernuu but ink iy ingane inne avoid akka like nthoko problem illa pole thoni agne etra effort idth njn</p>
+      <p style="--i:3">Saturday vanni but iy vanilaa pinne sunday njn kore choychu but iy ank athonnum paryan intrst illa parnj agne ariyathe ahn njn ihsantel kand parnjth iy karnjapo thanne aa verkknathonnum iplm inte mindin poytlyaa njn karnam iy hurt ayiii sorry sorry sorry sorry</p>
+      <p style="--i:4">njn annene kore karnj matte classil irn but ink ariya ankum hurt aykknnnn but ntha cheyyaaa ending ahnelum ink nammal thammil eplm happy aya oru ending ndvnm oru agrham ndyinu ith ipoo inod kore dheshym vech illa ending ayii le njn karnam iy bakkiollore onnum judge akkrth tta ihsankk onnum arilaa athe pole orkkke follow akkikondi bond vidarth iy ann parnjile tution kerandil irnunnu like ank itrm regret avan karnam njn ayiii sorrryy😭 njn ini pinnale veree sangadapedthee onnulyaaa</p>
+      <p style="--i:5">inne eplm nalla memories ayit kann ink eplm agnen always aa good times ahn inshallah eplm adipoli ayii povv tta always miss youu💎💌  tripin vernm nn plan ndernu pinne ntho vanda thonnii epllem evdelm vech kanaaa inshallah see youu</p>
+    </div>
+  </article>
+
+  <div class="timer" role="timer" aria-label="Time since we last spoke">
+    <div class="tlabel">Days we haven’t spoken</div>
+    <div class="tgrid">
+      <div><b id="td">0</b><span>days</span></div>
+      <div><b id="th">00</b><span>hours</span></div>
+      <div><b id="tm">00</b><span>min</span></div>
+      <div><b id="ts">00</b><span>sec</span></div>
+    </div>
+    <div class="tcontrols">
+      <button type="button" class="btn-stop" id="btnStop" aria-label="Stop timer">
+        <span id="btnIcon">■</span> <span id="btnLabel">Stop Timer</span>
+      </button>
+    </div>
+    <div class="tstatus" id="tStatus" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage'), env=document.getElementById('env'), text=document.getElementById('text'), done=false;
+
+  /* postage stamp with perforated edge */
+  (function(){
+    var w=56,h=68,c='',i,W='#f9f6f1';
+    for(i=4;i<w;i+=6){c+='<circle cx="'+i+'" cy="0" r="2.3" fill="'+W+'"/><circle cx="'+i+'" cy="'+h+'" r="2.3" fill="'+W+'"/>';}
+    for(i=5;i<h;i+=6){c+='<circle cx="0" cy="'+i+'" r="2.3" fill="'+W+'"/><circle cx="'+w+'" cy="'+i+'" r="2.3" fill="'+W+'"/>';}
+    document.getElementById('stamp').innerHTML=
+      '<svg viewBox="0 0 56 68"><rect width="56" height="68" fill="#6b2824"/>'+c+
+      '<rect x="5" y="5" width="46" height="58" fill="#f6eddd"/>'+
+      '<text x="28" y="18" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" letter-spacing=".8" fill="#6b2824">SORRY</text>'+
+      '<g fill="none" stroke="#6b2824" stroke-width="1.2" stroke-linejoin="round"><rect x="14" y="28" width="28" height="19"/><path d="M14 28L28 40L42 28"/><path d="M20 54h16" stroke-width=".8"/></g></svg>';
+  })();
+
+  /* use the largest text size at which the whole message fits */
+  function fit(){
+    var fs=19;
+    text.style.fontSize=fs+'px';
+    while(text.scrollHeight>text.clientHeight+1 && fs>7){
+      fs-=0.25;
+      text.style.fontSize=fs+'px';
+    }
+  }
+  function fitSoon(){fit();}
+  fit();
+  window.addEventListener('resize',fitSoon);
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}
+
+  /* live timer since 30 October 2026 (viewer's local time) */
+  var since=new Date(2026,9,30,0,0,0).getTime();
+  var eD=document.getElementById('td'), eH=document.getElementById('th'), eM=document.getElementById('tm'), eS=document.getElementById('ts');
+  var btnStop=document.getElementById('btnStop'), btnIcon=document.getElementById('btnIcon'), btnLabel=document.getElementById('btnLabel'), tStatus=document.getElementById('tStatus');
+  var isStopped=false, stoppedSeconds=0;
+
+  function pad(n){return n<10?'0'+n:''+n}
+  function render(s){
+    eD.textContent=Math.floor(s/86400);
+    eH.textContent=pad(Math.floor(s%86400/3600));
+    eM.textContent=pad(Math.floor(s%3600/60));
+    eS.textContent=pad(s%60);
+    eS.classList.remove('flip'); void eS.offsetWidth; eS.classList.add('flip');
+  }
+  function tick(){
+    if(isStopped)return;
+    var s=Math.max(0,Math.floor((Date.now()-since)/1000));
+    render(s);
+  }
+  tick();
+  setInterval(tick,1000);
+
+  if(btnStop){
+    btnStop.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(!isStopped){
+        isStopped=true;
+        stoppedSeconds=Math.max(0,Math.floor((Date.now()-since)/1000));
+        btnStop.classList.add('is-stopped');
+        btnIcon.textContent='▶';
+        btnLabel.textContent='Resume Timer';
+        tStatus.textContent='● Timer stopped ('+Math.floor(stoppedSeconds/86400)+'d '+pad(Math.floor(stoppedSeconds%86400/3600))+'h '+pad(Math.floor(stoppedSeconds%3600/60))+'m '+pad(stoppedSeconds%60)+'s frozen)';
+        tStatus.style.display='block';
+      } else {
+        isStopped=false;
+        btnStop.classList.remove('is-stopped');
+        btnIcon.textContent='■';
+        btnLabel.textContent='Stop Timer';
+        tStatus.style.display='none';
+        tick();
+      }
+    });
+  }
+
+  /* slow floating dust on the wine background */
+  var dust=document.getElementById('dust');
+  for(var d=0;d<24;d++){
+    var p=document.createElement('i'), sz=3+Math.random()*7;
+    p.style.cssText='left:'+(Math.random()*100)+'%;width:'+sz+'px;height:'+sz+'px;animation-duration:'+(12+Math.random()*14)+'s;animation-delay:'+(-Math.random()*20)+'s;--dx:'+(Math.random()*60-30)+'px';
+    dust.appendChild(p);
+  }
+
+  /* gentle 3D tilt of the letter following the finger or mouse */
+  var sheet=document.getElementById('sheet'), paperEl=document.querySelector('.paper');
+  paperEl.addEventListener('pointermove',function(e){
+    if(!document.body.classList.contains('show'))return;
+    var nx=e.clientX/window.innerWidth-.5, ny=e.clientY/window.innerHeight-.5, m=Math.sqrt(nx*nx+ny*ny);
+    sheet.style.rotate=(-ny)+' '+nx+' 0 '+(m*10)+'deg';
+  });
+  function untilt(){sheet.style.rotate='';}
+  paperEl.addEventListener('pointerleave',untilt);
+  paperEl.addEventListener('pointerup',untilt);
+  paperEl.addEventListener('pointercancel',untilt);
+
+  function open(){
+    if(done)return; done=true;
+    env.classList.add('open');
+    setTimeout(function(){
+      stage.classList.add('gone');
+      document.body.classList.add('show');
+      fit();
+    },2000);
+    setTimeout(function(){stage.classList.add('hidden')},3200);
+  }
+  stage.addEventListener('click',open);
+  stage.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}
+  });
+})();
+</script>
+</body>
+</html>
